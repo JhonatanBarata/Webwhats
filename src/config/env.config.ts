@@ -3,6 +3,15 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+function parseIntegerEnv(value: string | undefined, fallback: number): number {
+  if (value === undefined || value === null || value === '') {
+    return fallback;
+  }
+
+  const parsedValue = Number.parseInt(value, 10);
+  return Number.isNaN(parsedValue) ? fallback : parsedValue;
+}
+
 export type HttpServer = {
   NAME: string;
   TYPE: 'http' | 'https';
@@ -447,10 +456,13 @@ export class ConfigService {
   private loadEnv() {
     this.env = this.envProcess();
     this.env.PRODUCTION = process.env?.NODE_ENV === 'PROD';
-    if (process.env?.DOCKER_ENV === 'true') {
-      this.env.SERVER.TYPE = process.env.SERVER_TYPE as 'http' | 'http';
-      this.env.SERVER.PORT = Number.parseInt(process.env.SERVER_PORT) || 8080;
-    }
+    // Oracle-first runtime: required customer data is always persisted locally/in the database.
+    this.env.DATABASE.SAVE_DATA.INSTANCE = true;
+    this.env.DATABASE.SAVE_DATA.NEW_MESSAGE = true;
+    this.env.DATABASE.SAVE_DATA.MESSAGE_UPDATE = true;
+    this.env.DATABASE.SAVE_DATA.CONTACTS = true;
+    this.env.DATABASE.SAVE_DATA.CHATS = true;
+    this.env.DATABASE.SAVE_DATA.HISTORIC = true;
   }
 
   private envProcess(): Env {
@@ -801,7 +813,7 @@ export class ConfigService {
         NAME: process.env?.CONFIG_SESSION_PHONE_NAME || 'Chrome',
       },
       QRCODE: {
-        LIMIT: Number.parseInt(process.env.QRCODE_LIMIT) || 30,
+        LIMIT: parseIntegerEnv(process.env.QRCODE_LIMIT, 0),
         COLOR: process.env.QRCODE_COLOR || '#198754',
       },
       TYPEBOT: {
@@ -901,7 +913,7 @@ export class ConfigService {
         DSN: process.env?.SENTRY_DSN,
       },
       EVENT_EMITTER: {
-        MAX_LISTENERS: Number.parseInt(process.env?.EVENT_EMITTER_MAX_LISTENERS) || 50,
+        MAX_LISTENERS: parseIntegerEnv(process.env?.EVENT_EMITTER_MAX_LISTENERS, 0),
       },
     };
   }

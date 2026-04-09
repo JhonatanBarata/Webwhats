@@ -432,7 +432,11 @@ export class WAMonitoringService {
 
         this.waInstances[instanceName]?.client?.ws?.close();
 
-        this.waInstances[instanceName].instance.qrcode = { count: 0 };
+        if (typeof this.waInstances[instanceName]?.clearQrCode === 'function') {
+          this.waInstances[instanceName].clearQrCode('no_connection');
+        } else {
+          this.waInstances[instanceName].instance.qrcode = { count: 0, pairingCode: null, code: null, base64: null };
+        }
         this.waInstances[instanceName].stateConnection.state = 'close';
       } catch (error) {
         this.logger.error({

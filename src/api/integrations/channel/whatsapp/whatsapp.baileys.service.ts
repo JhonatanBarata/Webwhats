@@ -269,6 +269,7 @@ export class BaileysStartupService extends ChannelStartupService {
     await this.client?.logout('Log out instance: ' + this.instanceName);
 
     this.client?.ws?.close();
+    this.clearQrCode('logout');
 
     const db = this.configService.get<Database>('DATABASE');
     const cache = this.configService.get<CacheConf>('CACHE');
@@ -331,9 +332,26 @@ export class BaileysStartupService extends ChannelStartupService {
     };
   }
 
+  private get qrCodeLimit(): number {
+    return this.configService.get<QrCode>('QRCODE').LIMIT;
+  }
+
+  private clearQrCode(reason: 'connected' | 'logout' | 'expired' | 'no_connection') {
+    // QR lifecycle rule:
+    // - keep the last QR available in memory while it is still the current QR from WhatsApp
+    // - replace it only when WhatsApp emits a new QR
+    // - clear it when the instance connects, logs out, or the QR/session becomes unusable
+    this.instance.qrcode = {
+      count: reason === 'connected' ? 0 : this.instance.qrcode?.count || 0,
+      pairingCode: null,
+      code: null,
+      base64: null,
+    };
+  }
+
   private async connectionUpdate({ qr, connection, lastDisconnect }: Partial<ConnectionState>) {
     if (qr) {
-      if (this.instance.qrcode.count === this.configService.get<QrCode>('QRCODE').LIMIT) {
+      if (this.qrCodeLimit > 0 && this.instance.qrcode.count >= this.qrCodeLimit) {
         this.sendDataWebhook(Events.QRCODE_UPDATED, {
           message: 'QR code limit reached, please login again',
           statusCode: DisconnectReason.badSession,
@@ -357,6 +375,7 @@ export class BaileysStartupService extends ChannelStartupService {
         });
 
         this.endSession = true;
+        this.clearQrCode('expired');
 
         return this.eventEmitter.emit('no.connection', this.instance.name);
       }
@@ -465,6 +484,7 @@ export class BaileysStartupService extends ChannelStartupService {
     }
 
     if (connection === 'open') {
+      this.clearQrCode('connected');
       this.instance.wuid = this.client.user.id.replace(/:\d+/, '');
       try {
         const profilePic = await this.profilePicture(this.instance.wuid);

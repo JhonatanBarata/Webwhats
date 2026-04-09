@@ -2,7 +2,6 @@
 
 <div align="center">
 
-[![Docker Image](https://img.shields.io/badge/Docker-image-blue)](https://hub.docker.com/r/evoapicloud/evolution-api)
 [![Whatsapp Group](https://img.shields.io/badge/Group-WhatsApp-%2322BC18)](https://evolution-api.com/whatsapp)
 [![Discord Community](https://img.shields.io/badge/Discord-Community-blue)](https://evolution-api.com/discord)
 [![Postman Collection](https://img.shields.io/badge/Postman-Collection-orange)](https://evolution-api.com/postman) 
@@ -15,8 +14,15 @@
 [![Sponsors](https://img.shields.io/badge/Github-sponsor-orange)](https://github.com/sponsors/EvolutionAPI)
 
 </div>
-  
+
 <div align="center"><img src="./public/images/cover.png"></div>
+
+## Official Production Path
+
+The official production path for this installation is now direct Node.js + systemd on Linux, without Docker in the main flow.
+
+- Oracle / Ubuntu guide: [README_ORACLE.md](./README_ORACLE.md)
+- Production flow: `npm ci` -> `npm run build` -> `npm run db:generate` -> `npm run db:deploy` -> `npm run start:prod`
 
 ## Evolution API
 

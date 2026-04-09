@@ -1,0 +1,18 @@
+[Unit]
+Description=Evolution API
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/evolution
+Environment=NODE_ENV=PROD
+EnvironmentFile=/opt/evolution/.env
+ExecStart=/usr/bin/npm run start:prod
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target
