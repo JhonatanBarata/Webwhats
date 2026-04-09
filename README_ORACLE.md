@@ -1,28 +1,28 @@
 # README_ORACLE
 
-Base enxuta para Oracle Linux ou Ubuntu, rodando sem Docker no fluxo principal.
+Trilha oficial de produção para Oracle Linux ou Ubuntu: Node.js + systemd, sem Docker no caminho principal.
 
-## Objetivo
+## Escopo desta base
 
-- Node direto
 - Baileys
-- multi-instancia sem limite artificial de codigo
-- QR disponivel ate ser substituido por QR novo, conexao aberta, logout explicito ou expiracao real
-- persistencia obrigatoria de instancias, contatos, chats, historico, mensagens novas e updates
+- multi-instância sem limite artificial de código
+- persistência obrigatória de instâncias, mensagens novas, updates, contatos, chats e histórico
+- QR mantido até QR novo, conexão aberta, logout explícito ou expiração real
+- deploy direto em Linux com systemd
 
 ## Requisitos
 
-- Node 20
+- Node 20+
 - npm 10+
-- PostgreSQL ou MySQL acessivel
+- PostgreSQL ou MySQL acessível
 - systemd
 
-## Arquivos oficiais para Oracle
+## Arquivos oficiais de produção
 
 - `.env.oracle.example`
 - `systemd/evolution.service`
 
-## Fluxo oficial de producao
+## Fluxo oficial
 
 ```bash
 npm ci
@@ -32,34 +32,34 @@ npm run db:deploy
 npm run start:prod
 ```
 
-## Setup rapido
+## Docker
+
+Docker fica somente como legado opcional neste repositório. A trilha oficial de produção desta base é Node.js + systemd.
+
+## Preparação do host
 
 ```bash
-cp .env.oracle.example .env
-mkdir -p instances store store/auth
-npm ci
-npm run build
-npm run db:generate
-npm run db:deploy
+sudo useradd --system --home-dir /opt/webwhats --shell /usr/sbin/nologin webwhats
+sudo install -d -o webwhats -g webwhats /opt/webwhats
+sudo rsync -av --delete --exclude .git --exclude node_modules ./ /opt/webwhats/
+sudo chown -R webwhats:webwhats /opt/webwhats
 ```
 
-## Start manual
+## Build e banco
 
 ```bash
-npm run start:prod
+cd /opt/webwhats
+sudo -u webwhats cp .env.oracle.example .env
+sudo -u webwhats mkdir -p instances store store/auth
+sudo -u webwhats npm ci
+sudo -u webwhats npm run build
+sudo -u webwhats npm run db:generate
+sudo -u webwhats npm run db:deploy
 ```
 
 ## systemd
 
 ```bash
-sudo mkdir -p /opt/evolution
-sudo rsync -av --delete ./ /opt/evolution/
-cd /opt/evolution
-cp .env.oracle.example .env
-npm ci
-npm run build
-npm run db:generate
-npm run db:deploy
 sudo cp systemd/evolution.service /etc/systemd/system/evolution.service
 sudo systemctl daemon-reload
 sudo systemctl enable evolution
@@ -67,22 +67,29 @@ sudo systemctl start evolution
 sudo systemctl status evolution
 ```
 
-## Observacoes operacionais
+## Verificações operacionais
 
-- `PROVIDER_ENABLED=false` no fluxo Oracle para nao depender de file server externo.
-- `CACHE_REDIS_ENABLED=false` por padrao no exemplo Oracle.
-- `EVENT_EMITTER_MAX_LISTENERS=0` remove teto artificial de listeners no runtime.
-- `QRCODE_LIMIT=0` desliga o limite artificial de geracao de QR.
-- Os dados obrigatorios do cliente continuam persistidos pelo banco e pelos artefatos locais de auth em `instances/`.
+- `PROVIDER_ENABLED=false` mantém a operação sem file server externo.
+- `DATABASE_SAVE_DATA_INSTANCE`, `DATABASE_SAVE_DATA_NEW_MESSAGE`, `DATABASE_SAVE_MESSAGE_UPDATE`, `DATABASE_SAVE_DATA_CONTACTS`, `DATABASE_SAVE_DATA_CHATS` e `DATABASE_SAVE_DATA_HISTORIC` são obrigatórios em runtime.
+- `QRCODE_LIMIT=0` remove o teto artificial de QR.
+- `EVENT_EMITTER_MAX_LISTENERS=0` deixa o EventEmitter2 sem teto artificial de listeners.
+- `DEL_INSTANCE=false` evita remoção automática de instâncias.
+- `instances/` e o banco seguem como base de persistência operacional.
 
-## Update de deploy
+## Atualização de deploy
 
 ```bash
-cd /opt/evolution
+cd /opt/webwhats
 git pull
-npm ci
-npm run build
-npm run db:generate
-npm run db:deploy
+sudo -u webwhats npm ci
+sudo -u webwhats npm run build
+sudo -u webwhats npm run db:generate
+sudo -u webwhats npm run db:deploy
 sudo systemctl restart evolution
+```
+
+## Logs
+
+```bash
+sudo journalctl -u evolution -f
 ```

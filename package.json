@@ -1,7 +1,7 @@
 {
-  "name": "evolution-api",
+  "name": "webwhats",
   "version": "2.3.7",
-  "description": "Rest api for communication with WhatsApp",
+  "description": "WhatsApp API com Baileys e multi-instancia para deploy Oracle/Linux sem Docker no fluxo principal",
   "main": "./dist/main.js",
   "type": "commonjs",
   "scripts": {
@@ -24,7 +24,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/EvolutionAPI/evolution-api.git"
+    "url": "git+https://github.com/JhonatanBarata/Webwhats.git"
   },
   "keywords": [
     "chat",
@@ -48,9 +48,13 @@
   },
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/EvolutionAPI/evolution-api/issues"
+    "url": "https://github.com/JhonatanBarata/Webwhats/issues"
   },
-  "homepage": "https://github.com/EvolutionAPI/evolution-api#readme",
+  "homepage": "https://github.com/JhonatanBarata/Webwhats#readme",
+  "engines": {
+    "node": ">=20",
+    "npm": ">=10"
+  },
   "lint-staged": {
     "src/**/*.{ts,js}": [
       "eslint --fix"

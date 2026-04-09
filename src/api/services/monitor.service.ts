@@ -293,18 +293,22 @@ export class WAMonitoringService {
       ownerJid: instanceData.ownerJid,
     });
 
-    if (instanceData.connectionStatus === 'open' || instanceData.connectionStatus === 'connecting') {
-      this.logger.info(
-        `Auto-connecting instance "${instanceData.instanceName}" (status: ${instanceData.connectionStatus})`,
-      );
-      await instance.connectToWhatsapp();
-    } else {
-      this.logger.info(
-        `Skipping auto-connect for instance "${instanceData.instanceName}" (status: ${instanceData.connectionStatus || 'close'})`,
-      );
-    }
-
     this.waInstances[instanceData.instanceName] = instance;
+
+    try {
+      if (instanceData.connectionStatus === 'open' || instanceData.connectionStatus === 'connecting') {
+        this.logger.info(
+          `Auto-connecting instance "${instanceData.instanceName}" (status: ${instanceData.connectionStatus})`,
+        );
+        await instance.connectToWhatsapp();
+      } else {
+        this.logger.info(
+          `Skipping auto-connect for instance "${instanceData.instanceName}" (status: ${instanceData.connectionStatus || 'close'})`,
+        );
+      }
+    } catch (error) {
+      this.logger.error(`Failed to initialize instance "${instanceData.instanceName}": ${error?.toString()}`);
+    }
   }
 
   private async loadInstancesFromRedis() {
@@ -331,7 +335,7 @@ export class WAMonitoringService {
             connectionStatus: instanceData.connectionStatus as any, // Pass connection status
           };
 
-          this.setInstance(instance);
+          await this.setInstance(instance);
         }),
       );
     }
@@ -350,7 +354,7 @@ export class WAMonitoringService {
 
     await Promise.all(
       instances.map(async (instance) => {
-        this.setInstance({
+        await this.setInstance({
           instanceId: instance.id,
           instanceName: instance.name,
           integration: instance.integration,
@@ -377,7 +381,7 @@ export class WAMonitoringService {
           where: { id: instanceId },
         });
 
-        this.setInstance({
+        await this.setInstance({
           instanceId: instance.id,
           instanceName: instance.name,
           integration: instance.integration,
@@ -396,8 +400,8 @@ export class WAMonitoringService {
 
         this.clearDelInstanceTime(instanceName);
 
-        this.cleaningUp(instanceName);
-        this.cleaningStoreData(instanceName);
+        await this.cleaningUp(instanceName);
+        await this.cleaningStoreData(instanceName);
       } finally {
         this.logger.warn(`Instance "${instanceName}" - REMOVED`);
       }
@@ -418,7 +422,7 @@ export class WAMonitoringService {
           this.waInstances[instanceName]?.clearCacheChatwoot();
         }
 
-        this.cleaningUp(instanceName);
+        await this.cleaningUp(instanceName);
       } finally {
         this.logger.warn(`Instance "${instanceName}" - LOGOUT`);
       }

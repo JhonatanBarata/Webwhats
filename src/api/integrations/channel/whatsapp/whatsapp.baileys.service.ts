@@ -449,6 +449,8 @@ export class BaileysStartupService extends ChannelStartupService {
       if (shouldReconnect) {
         await this.connectToWhatsapp(this.phoneNumber);
       } else {
+        this.clearQrCode('logout');
+
         this.sendDataWebhook(Events.STATUS_INSTANCE, {
           instance: this.instance.name,
           status: 'closed',
@@ -1920,7 +1922,7 @@ export class BaileysStartupService extends ChannelStartupService {
             }
 
             if (events['connection.update']) {
-              this.connectionUpdate(events['connection.update']);
+              await this.connectionUpdate(events['connection.update']);
             }
 
             if (events['creds.update']) {

@@ -12,6 +12,10 @@ function parseIntegerEnv(value: string | undefined, fallback: number): number {
   return Number.isNaN(parsedValue) ? fallback : parsedValue;
 }
 
+function parseNonNegativeIntegerEnv(value: string | undefined, fallback: number): number {
+  return Math.max(0, parseIntegerEnv(value, fallback));
+}
+
 export type HttpServer = {
   NAME: string;
   TYPE: 'http' | 'https';
@@ -813,7 +817,7 @@ export class ConfigService {
         NAME: process.env?.CONFIG_SESSION_PHONE_NAME || 'Chrome',
       },
       QRCODE: {
-        LIMIT: parseIntegerEnv(process.env.QRCODE_LIMIT, 0),
+        LIMIT: parseNonNegativeIntegerEnv(process.env.QRCODE_LIMIT, 0),
         COLOR: process.env.QRCODE_COLOR || '#198754',
       },
       TYPEBOT: {
@@ -913,7 +917,7 @@ export class ConfigService {
         DSN: process.env?.SENTRY_DSN,
       },
       EVENT_EMITTER: {
-        MAX_LISTENERS: parseIntegerEnv(process.env?.EVENT_EMITTER_MAX_LISTENERS, 0),
+        MAX_LISTENERS: parseNonNegativeIntegerEnv(process.env?.EVENT_EMITTER_MAX_LISTENERS, 0),
       },
     };
   }
