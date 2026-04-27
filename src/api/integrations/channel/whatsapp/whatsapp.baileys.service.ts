@@ -3811,28 +3811,14 @@ export class BaileysStartupService extends ChannelStartupService {
     }
 
     try {
-      const lastMessage = await this.getLastMessage(remoteJid).catch(() => null);
-      const messageTimestamp = Number(lastMessage?.messageTimestamp);
-
-      if (
-        !lastMessage?.key?.id ||
-        !lastMessage?.key?.remoteJid ||
-        typeof lastMessage?.key?.fromMe !== 'boolean' ||
-        lastMessage?.messageTimestamp === undefined ||
-        lastMessage?.messageTimestamp === null ||
-        !Number.isFinite(messageTimestamp)
-      ) {
-        throw new BadRequestException('Não foi possível apagar: última mensagem real do chat não encontrada.');
-      }
-
       await this.enqueueChatModify(async () =>
         this.client.chatModify(
           {
             delete: true,
             lastMessages: [
               {
-                key: lastMessage.key,
-                messageTimestamp: Number(lastMessage.messageTimestamp),
+                key: receivedLastMessage.key,
+                messageTimestamp: Number(receivedLastMessage.messageTimestamp),
               },
             ],
           },
@@ -3842,7 +3828,8 @@ export class BaileysStartupService extends ChannelStartupService {
 
       return { chatId: remoteJid, deleted: true };
     } catch (error) {
-      if (Number((error as any)?.status || 0) >= 400 && Number((error as any)?.status || 0) < 500) {
+      const statusCode = Number((error as any)?.status || (error as any)?.output?.statusCode || 0);
+      if (statusCode >= 400 && statusCode < 500) {
         throw error;
       }
       throw new InternalServerErrorException({
