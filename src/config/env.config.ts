@@ -474,8 +474,8 @@ export class ConfigService {
       SERVER: {
         NAME: process.env?.SERVER_NAME || 'evolution',
         TYPE: (process.env.SERVER_TYPE as 'http' | 'https') || 'http',
-        PORT: Number.parseInt(process.env.SERVER_PORT) || 8080,
-        URL: process.env.SERVER_URL,
+        PORT: parseIntegerEnv(process.env?.PORT ?? process.env?.SERVER_PORT, 8080),
+        URL: process.env?.RENDER_EXTERNAL_URL || process.env?.SERVER_URL || '',
         DISABLE_DOCS: process.env?.SERVER_DISABLE_DOCS === 'true',
         DISABLE_MANAGER: process.env?.SERVER_DISABLE_MANAGER === 'true',
       },

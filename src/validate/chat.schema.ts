@@ -91,6 +91,34 @@ export const archiveChatSchema: JSONSchema7 = {
   required: ['archive'],
 };
 
+export const deleteChatSchema: JSONSchema7 = {
+  $id: v4(),
+  type: 'object',
+  properties: {
+    remoteJid: { type: 'string' },
+    lastMessage: {
+      type: 'object',
+      properties: {
+        key: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            remoteJid: { type: 'string' },
+            fromMe: { type: 'boolean', enum: [true, false] },
+            participant: { type: ['string', 'null'] },
+          },
+          required: ['id', 'fromMe', 'remoteJid'],
+          ...isNotEmpty('id', 'remoteJid'),
+        },
+        messageTimestamp: { type: ['integer', 'number', 'string'] },
+      },
+      required: ['key', 'messageTimestamp'],
+    },
+  },
+  required: ['remoteJid', 'lastMessage'],
+  ...isNotEmpty('remoteJid'),
+};
+
 export const markChatUnreadSchema: JSONSchema7 = {
   $id: v4(),
   type: 'object',

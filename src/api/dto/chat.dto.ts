@@ -65,6 +65,7 @@ class Key {
   id: string;
   fromMe: boolean;
   remoteJid: string;
+  participant?: string | null;
 }
 export class ReadMessageDto {
   readMessages: Key[];
@@ -79,6 +80,11 @@ export class ArchiveChatDto {
   lastMessage?: LastMessage;
   chat?: string;
   archive: boolean;
+}
+
+export class DeleteChatDto {
+  remoteJid: string;
+  lastMessage: LastMessage;
 }
 
 export class MarkChatUnreadDto {

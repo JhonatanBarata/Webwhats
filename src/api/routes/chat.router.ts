@@ -2,6 +2,7 @@ import { RouterBroker } from '@api/abstract/abstract.router';
 import {
   ArchiveChatDto,
   BlockUserDto,
+  DeleteChatDto,
   DeleteMessage,
   getBase64FromMediaMessageDto,
   MarkChatUnreadDto,
@@ -23,6 +24,7 @@ import {
   archiveChatSchema,
   blockUserSchema,
   contactValidateSchema,
+  deleteChatSchema,
   deleteMessageSchema,
   markChatUnreadSchema,
   messageUpSchema,
@@ -76,6 +78,16 @@ export class ChatRouter extends RouterBroker {
           schema: archiveChatSchema,
           ClassRef: ArchiveChatDto,
           execute: (instance, data) => chatController.archiveChat(instance, data),
+        });
+
+        return res.status(HttpStatus.CREATED).json(response);
+      })
+      .post(this.routerPath('delete'), ...guards, async (req, res) => {
+        const response = await this.dataValidate<DeleteChatDto>({
+          request: req,
+          schema: deleteChatSchema,
+          ClassRef: DeleteChatDto,
+          execute: (instance, data) => chatController.deleteChat(instance, data),
         });
 
         return res.status(HttpStatus.CREATED).json(response);
