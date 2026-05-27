@@ -7,13 +7,17 @@ class Redis {
   private client: RedisClientType = null;
   private conf: CacheConfRedis;
   private connected = false;
+  private connecting = false;
 
   constructor() {
     this.conf = configService.get<CacheConf>('CACHE')?.REDIS;
   }
 
   getConnection(): RedisClientType {
-    if (this.connected) {
+    if (this.connected && this.client) {
+      return this.client;
+    }
+    if (this.connecting && this.client) {
       return this.client;
     } else {
       this.client = createClient({
@@ -27,26 +31,32 @@ class Redis {
       this.client.on('ready', () => {
         this.logger.verbose('redis ready');
         this.connected = true;
+        this.connecting = false;
       });
 
-      this.client.on('error', () => {
-        this.logger.error('redis disconnected');
+      this.client.on('error', (error) => {
+        this.logger.error(`redis error: ${error?.message || error}`);
         this.connected = false;
       });
 
       this.client.on('end', () => {
         this.logger.verbose('redis connection ended');
         this.connected = false;
+        this.connecting = false;
       });
 
-      try {
-        this.client.connect();
-        this.connected = true;
-      } catch (e) {
-        this.connected = false;
-        this.logger.error('redis connect exception caught: ' + e);
-        return null;
-      }
+      this.connecting = true;
+      void this.client
+        .connect()
+        .then(() => {
+          this.connected = true;
+          this.connecting = false;
+        })
+        .catch((e) => {
+          this.connected = false;
+          this.connecting = false;
+          this.logger.error('redis connect exception caught: ' + e);
+        });
 
       return this.client;
     }
