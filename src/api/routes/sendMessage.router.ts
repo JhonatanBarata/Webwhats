@@ -35,7 +35,12 @@ import multer from 'multer';
 
 import { HttpStatus } from './index.router';
 
-const upload = multer({ storage: multer.memoryStorage() });
+const DEFAULT_UPLOAD_LIMIT_BYTES = 32 * 1024 * 1024;
+const uploadMaxBytes = Number.parseInt(process.env.WEBWHATS_UPLOAD_MAX_BYTES || '', 10) || DEFAULT_UPLOAD_LIMIT_BYTES;
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: Math.max(1, uploadMaxBytes) },
+});
 
 export class MessageRouter extends RouterBroker {
   constructor(...guards: RequestHandler[]) {

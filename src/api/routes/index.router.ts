@@ -55,7 +55,7 @@ const metricsIPWhitelist = (req: Request, res: Response, next: NextFunction) => 
     req.headers['x-forwarded-for'],
   ].filter((ip) => ip !== undefined);
 
-  if (allowedIPs.filter((ip) => clientIPs.includes(ip)) === 0) {
+  if (!allowedIPs.some((ip) => clientIPs.includes(ip))) {
     return res.status(403).send('Forbidden: IP not allowed');
   }
 
